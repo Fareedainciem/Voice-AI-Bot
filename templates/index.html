@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,18 +12,87 @@
             box-sizing: border-box;
         }
 
+        html,
+        body {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #0f172a 0%, #581c87 50%, #0f172a 100%);
-            min-height: 100vh;
-            padding: 20px;
             color: white;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 350px;
+            min-width: 200px;
+            max-width: 50vw;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            resize: horizontal;
+            overflow-x: hidden;
+            overflow-y: auto;
+            height: 100%;
+            padding: 20px;
+            transition: width 0.1s ease;
+            flex-shrink: 0;
+        }
+
+        .sidebar-header {
+            padding: 10px 0 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 40px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 0;
+            /* Prevents overflow-x in flex items */
         }
 
         .container {
+            width: 100%;
             max-width: 800px;
             margin: 0 auto;
-            padding-top: 40px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+                overflow: auto;
+            }
+
+            .sidebar {
+                width: 100% !important;
+                height: auto;
+                max-width: none;
+                resize: none;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .main-content {
+                height: auto;
+                overflow: visible;
+            }
         }
 
         .header {
@@ -146,8 +216,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
         }
 
         .record-button svg {
@@ -337,111 +414,131 @@
             display: none;
         }
 
-        .loader {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+        .response-area {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 10px;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .response-area::-webkit-scrollbar {
+            width: 6px;
         }
 
-        .status-text {
-            font-size: 1.1rem;
-            margin-top: 20px;
+        .response-area::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .response-area::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .response-area::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
     </style>
 </head>
+
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Voice AI Bot</h1>
-            <p>Speak in any language, get instant responses</p>
-        </div>
-
-        <div class="main-card">
-            <!-- Language Selector -->
-            <div class="language-bar">
-                <div class="dropdown">
-                    <button class="dropdown-button" id="languageButton">
-                        <span id="selectedLanguage">English</span>
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                    </button>
-                    <div class="dropdown-menu" id="languageMenu">
-                        <div class="dropdown-item active" data-value="en" data-name="English">English</div>
-                        <div class="dropdown-item" data-value="ml" data-name="Malayalam (മലയാളം)">Malayalam (മലയാളം)</div>
-                        <div class="dropdown-item" data-value="hi" data-name="Hindi (हिंदी)">Hindi (हिंदी)</div>
-                        <div class="dropdown-item" data-value="ta" data-name="Tamil (தமிழ்)">Tamil (தமிழ்)</div>
-                        <div class="dropdown-item" data-value="ar" data-name="Arabic">Arabic</div>
-                        <div class="dropdown-item" data-value="fr" data-name="French">French</div>
-                        <div class="dropdown-item" data-value="es" data-name="Spanish">Spanish</div>
-                    </div>
-                </div>
+    <div class="main-content">
+        <div class="container">
+            <div class="header">
+                <h1>Voice AI Bot</h1>
+                <p>Speak in any language, get instant responses</p>
             </div>
 
-            <!-- Recording Area -->
-            <div class="recording-area" id="recordingArea">
-                <button class="record-button" id="recordButton">
-                    <svg id="micIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                        <line x1="12" y1="19" x2="12" y2="23"></line>
-                        <line x1="8" y1="23" x2="16" y2="23"></line>
-                    </svg>
-                </button>
-                <p class="status-text" id="statusText">Click microphone to start recording</p>
-
-                <div class="divider">
-                    <span>or</span>
-                </div>
-
-                <button class="upload-button" id="uploadButton">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                        <polyline points="17 8 12 3 7 8"></polyline>
-                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                    </svg>
-                    Upload Audio File
-                </button>
-                <input type="file" id="fileInput" accept="audio/*" class="hidden">
-            </div>
-
-            <!-- Audio Preview Area -->
-            <div id="audioPreviewArea" class="hidden" style="padding: 0 50px 50px;">
-                <div class="audio-preview">
-                    <div class="audio-header">
-                        <span>Your Recording</span>
-                        <button class="clear-button" id="clearButton">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                <line x1="6" y1="6" x2="18" y2="18"></line>
+            <div class="main-card">
+                <!-- Language Selector -->
+                <div class="language-bar">
+                    <div class="dropdown">
+                        <button class="dropdown-button" id="languageButton">
+                            <span id="selectedLanguage">English</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>
                         </button>
+                        <div class="dropdown-menu" id="languageMenu">
+                            <div class="dropdown-item active" data-value="en" data-name="English">English</div>
+                            <div class="dropdown-item" data-value="ml" data-name="Malayalam (മലയാളം)">Malayalam (മലയാളം)
+                            </div>
+                            <div class="dropdown-item" data-value="hi" data-name="Hindi (हिंदी)">Hindi (हिंदी)</div>
+                            <div class="dropdown-item" data-value="ta" data-name="Tamil (தமிழ்)">Tamil (தமிழ்)</div>
+                            <div class="dropdown-item" data-value="ar" data-name="Arabic">Arabic</div>
+                            <div class="dropdown-item" data-value="fr" data-name="French">French</div>
+                            <div class="dropdown-item" data-value="es" data-name="Spanish">Spanish</div>
+                        </div>
                     </div>
-                    <audio id="audioPreview" controls></audio>
                 </div>
-                <button class="send-button" id="sendButton">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="22" y1="2" x2="11" y2="13"></line>
-                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                    </svg>
-                    <span id="sendButtonText">Send to AI</span>
-                </button>
-            </div>
 
-            <!-- Error Area -->
-            <div id="errorArea" class="error-box hidden"></div>
+                <!-- Recording Area -->
+                <div class="recording-area" id="recordingArea">
+                    <button class="record-button" id="recordButton">
+                        <svg id="micIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                        </svg>
+                    </button>
+                    <p class="status-text" id="statusText">Click microphone to start recording</p>
 
-            <!-- Response Area (Chat History) -->
-            <div id="responseArea" class="response-area hidden">
+                    <div class="divider">
+                        <span>or</span>
+                    </div>
+
+                    <button class="upload-button" id="uploadButton">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Upload Audio File
+                    </button>
+                    <input type="file" id="fileInput" accept="audio/*" class="hidden">
+                </div>
+
+                <!-- Audio Preview Area -->
+                <div id="audioPreviewArea" class="hidden" style="padding: 0 50px 50px;">
+                    <div class="audio-preview">
+                        <div class="audio-header">
+                            <span>Your Recording</span>
+                            <button class="clear-button" id="clearButton">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <audio id="audioPreview" controls></audio>
+                    </div>
+                    <button class="send-button" id="sendButton">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"></line>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                        </svg>
+                        <span id="sendButtonText">Send to AI</span>
+                    </button>
+                </div>
+
+                <!-- Error Area -->
+                <div id="errorArea" class="error-box hidden"></div>
             </div>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            Chat History
+        </div>
+        <div id="responseArea" class="response-area">
+            <!-- Messages will be prepended here -->
         </div>
     </div>
 
@@ -481,7 +578,7 @@
             try {
                 const response = await fetch(`http://127.0.0.1:8000/history/${sessionId}`);
                 const data = await response.json();
-                
+
                 if (data.history && data.history.length > 0) {
                     // Display loaded history
                     const responseArea = document.getElementById('responseArea');
@@ -496,27 +593,33 @@
 
         function displayHistoryMessage(msg) {
             const responseArea = document.getElementById('responseArea');
-            const userDiv = document.createElement('div');
-            userDiv.className = 'message';
-            userDiv.innerHTML = `
-                <div class="message-avatar user-avatar">👤</div>
-                <div class="message-content">
-                    <div class="message-label">You said</div>
-                    <div class="message-text">${escapeHtml(msg.user)}</div>
-                </div>
-            `;
-            responseArea.appendChild(userDiv);
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'history-group';
+            groupDiv.style.marginBottom = '20px';
+            groupDiv.style.padding = '15px';
+            groupDiv.style.background = 'rgba(255, 255, 255, 0.05)';
+            groupDiv.style.borderRadius = '12px';
+            groupDiv.style.border = '1px solid rgba(255, 255, 255, 0.05)';
 
-            const botDiv = document.createElement('div');
-            botDiv.className = 'message';
-            botDiv.innerHTML = `
-                <div class="message-avatar bot-avatar">🤖</div>
-                <div class="message-content">
-                    <div class="message-label">AI Response</div>
-                    <div class="message-text">${escapeHtml(msg.bot)}</div>
+            groupDiv.innerHTML = `
+                <div class="message" style="margin-bottom: 15px;">
+                    <div class="message-avatar user-avatar" style="width: 30px; height: 30px; font-size: 1rem;">👤</div>
+                    <div class="message-content">
+                        <div class="message-label" style="font-size: 0.75rem;">You</div>
+                        <div class="message-text" style="font-size: 0.9rem; margin-bottom: 0;">${escapeHtml(msg.user)}</div>
+                    </div>
+                </div>
+                <div class="message" style="margin-bottom: 0;">
+                    <div class="message-avatar bot-avatar" style="width: 30px; height: 30px; font-size: 1rem;">🤖</div>
+                    <div class="message-content">
+                        <div class="message-label" style="font-size: 0.75rem;">AI</div>
+                        <div class="message-text" style="font-size: 0.9rem; margin-bottom: 0;">${escapeHtml(msg.bot)}</div>
+                    </div>
                 </div>
             `;
-            responseArea.appendChild(botDiv);
+
+            // Prepend to show newer at above
+            responseArea.prepend(groupDiv);
             responseArea.classList.remove('hidden');
         }
 
@@ -660,48 +763,57 @@
         });
 
         function showResponse(data) {
-            const userDiv = document.createElement('div');
-            userDiv.className = 'message';
-            userDiv.innerHTML = `
-                <div class="message-avatar user-avatar">👤</div>
-                <div class="message-content">
-                    <div class="message-label">You said</div>
-                    <div class="message-text">${escapeHtml(data.user_text)}</div>
-                </div>
-            `;
-            
-            const botDiv = document.createElement('div');
-            botDiv.className = 'message';
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'history-group current-response';
+            groupDiv.style.marginBottom = '20px';
+            groupDiv.style.padding = '15px';
+            groupDiv.style.background = 'rgba(168, 85, 247, 0.1)';
+            groupDiv.style.borderRadius = '12px';
+            groupDiv.style.border = '1px solid rgba(168, 85, 247, 0.2)';
+
             const audioId = `audio-${Date.now()}`;
-            botDiv.innerHTML = `
-                <div class="message-avatar bot-avatar">🤖</div>
-                <div class="message-content">
-                    <div class="message-label">AI Response</div>
-                    <div class="message-text">${escapeHtml(data.bot_text)}</div>
-                    <button class="play-button" onclick="playAudio('${audioId}')">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="play-icon-${audioId}">
-                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                        </svg>
-                        <span class="play-text-${audioId}">Play Audio</span>
-                    </button>
-                    <audio id="${audioId}" src="http://127.0.0.1:8000${data.audio_url}"></audio>
+            groupDiv.innerHTML = `
+                <div class="message" style="margin-bottom: 15px;">
+                    <div class="message-avatar user-avatar" style="width: 30px; height: 30px; font-size: 1rem;">👤</div>
+                    <div class="message-content">
+                        <div class="message-label" style="font-size: 0.75rem;">You</div>
+                        <div class="message-text" style="font-size: 0.9rem; margin-bottom: 0;">${escapeHtml(data.user_text)}</div>
+                    </div>
+                </div>
+                <div class="message" style="margin-bottom: 0;">
+                    <div class="message-avatar bot-avatar" style="width: 30px; height: 30px; font-size: 1rem;">🤖</div>
+                    <div class="message-content">
+                        <div class="message-label" style="font-size: 0.75rem;">AI</div>
+                        <div class="message-text" style="font-size: 0.9rem; margin-bottom: 10px;">${escapeHtml(data.bot_text)}</div>
+                        <button class="play-button" onclick="playAudio('${audioId}')" style="padding: 5px 12px; font-size: 0.8rem;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="play-icon-${audioId}">
+                                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                            </svg>
+                            <span class="play-text-${audioId}">Play</span>
+                        </button>
+                        <audio id="${audioId}" src="http://127.0.0.1:8000${data.audio_url}"></audio>
+                    </div>
                 </div>
             `;
-            
+
             const responseArea = document.getElementById('responseArea');
-            responseArea.appendChild(userDiv);
-            responseArea.appendChild(botDiv);
+            responseArea.prepend(groupDiv);
             responseArea.classList.remove('hidden');
-            
-            // Scroll to bottom
-            responseArea.scrollTop = responseArea.scrollHeight;
+
+            // Scroll to top of sidebar
+            responseArea.scrollTop = 0;
+
+            // Auto play the response
+            setTimeout(() => {
+                playAudio(audioId);
+            }, 100);
         }
 
         function playAudio(audioId) {
             const audio = document.getElementById(audioId);
             const icon = document.querySelector(`.play-icon-${audioId}`);
             const text = document.querySelector(`.play-text-${audioId}`);
-            
+
             if (audio.paused) {
                 audio.play();
                 text.textContent = 'Pause';
@@ -711,7 +823,7 @@
                 text.textContent = 'Play Audio';
                 icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
             }
-            
+
             audio.addEventListener('ended', () => {
                 text.textContent = 'Play Audio';
                 icon.innerHTML = '<polygon points="5 3 19 12 5 21 5 3"></polygon>';
@@ -732,4 +844,5 @@
         initSession();
     </script>
 </body>
+
 </html>

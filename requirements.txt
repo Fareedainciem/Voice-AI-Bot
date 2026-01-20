@@ -15,6 +15,9 @@ soundfile
 numpy
 gtts
 torch
+twilio
 
 flask 
 requests
+
+indic-transliteration
